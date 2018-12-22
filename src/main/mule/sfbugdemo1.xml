@@ -15,7 +15,6 @@ http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/
 	</http:listener-config>
 	<flow name="sfbugdemo1Flow" doc:id="ef8db1b0-0d4f-425d-8d66-5358b643464b" >
 		<http:listener doc:name="Listener" doc:id="88334b34-2c63-46f9-8313-3db420942d22" config-ref="HTTP_Listener_config" path="/"/>
-		<logger level="INFO" doc:name="Logger" doc:id="84ca511e-2789-43b2-bc2f-93c82a55025c" message='#[payload]'/>
 		<ee:transform doc:name="Transform Message" doc:id="912c045a-508a-4dc6-841b-bce00fcf2148" >
 			<ee:message >
 				<ee:set-payload ><![CDATA[%dw 2.0
@@ -31,7 +30,6 @@ import * from dw::core::Binaries
 			</ee:message>
 		</ee:transform>
 		<salesforce:create type="ContentVersion" doc:name="Create" doc:id="c20cf5be-917b-4108-a240-0b85da37eb27" config-ref="Salesforce_Config"/>
-		<logger level="INFO" doc:name="Logger" doc:id="2e494cc9-4885-40c9-ab29-00fd39212233" message="#[output application/json --- payload]"/>
 		<set-payload value="#[output application/json --- payload]" doc:name="Set Payload" doc:id="b5908497-fffd-4efb-be5a-8f4d87f0522d" />
 	</flow>
 </mule>
