@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<mule xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core" xmlns:http="http://www.mulesoft.org/schema/mule/http"
+	xmlns:salesforce="http://www.mulesoft.org/schema/mule/salesforce"
+	xmlns="http://www.mulesoft.org/schema/mule/core" xmlns:doc="http://www.mulesoft.org/schema/mule/documentation" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+http://www.mulesoft.org/schema/mule/salesforce http://www.mulesoft.org/schema/mule/salesforce/current/mule-salesforce.xsd
+http://www.mulesoft.org/schema/mule/http http://www.mulesoft.org/schema/mule/http/current/mule-http.xsd
+http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd">
+	<salesforce:sfdc-config name="Salesforce_Config" doc:name="Salesforce Config" doc:id="5e5e9596-3d50-4c31-9391-3389cf2138c8" >
+		<salesforce:basic-connection username="${sfdc.username}" password="${sfdc.password}" securityToken="${sfdc.token}" url="https://login.salesforce.com/services/Soap/u/42.0"/>
+	</salesforce:sfdc-config>
+	<configuration-properties doc:name="Configuration properties" doc:id="0b39c90c-f187-4797-bf75-3568484e3cd1" file="config.yaml" />
+	<http:listener-config name="HTTP_Listener_config" doc:name="HTTP Listener config" doc:id="01e579aa-7399-4ef1-9057-7dc4595058b5" >
+		<http:listener-connection host="0.0.0.0" port="8081" />
+	</http:listener-config>
+	<flow name="sfbugdemo1Flow" doc:id="ef8db1b0-0d4f-425d-8d66-5358b643464b" >
+		<http:listener doc:name="Listener" doc:id="88334b34-2c63-46f9-8313-3db420942d22" config-ref="HTTP_Listener_config" path="/"/>
+		<logger level="INFO" doc:name="Logger" doc:id="84ca511e-2789-43b2-bc2f-93c82a55025c" message='#[payload]'/>
+		<ee:transform doc:name="Transform Message" doc:id="912c045a-508a-4dc6-841b-bce00fcf2148" >
+			<ee:message >
+				<ee:set-payload ><![CDATA[%dw 2.0
+output application/java
+import * from dw::core::Binaries
+---
+[{
+	Title: payload.title,
+	VersionData: fromBase64(payload.content) as String,
+	(ContentDocumentId: payload.contentDocumentId) if (payload.contentDocumentId != null),
+	PathOnClient: payload.title
+}]]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+		<salesforce:create type="ContentVersion" doc:name="Create" doc:id="c20cf5be-917b-4108-a240-0b85da37eb27" config-ref="Salesforce_Config"/>
+		<logger level="INFO" doc:name="Logger" doc:id="2e494cc9-4885-40c9-ab29-00fd39212233" message="#[output application/json --- payload]"/>
+		<set-payload value="#[output application/json --- payload]" doc:name="Set Payload" doc:id="b5908497-fffd-4efb-be5a-8f4d87f0522d" />
+	</flow>
+</mule>
